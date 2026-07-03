@@ -1,0 +1,36 @@
+﻿<Properties StartupConfiguration="{0A38F0C6-C0E1-F5ED-FE01-13C7D6F5937A}|">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Plugins/Sobot/UZCSobotApi.cs">
+    <Files>
+      <File FileName="Assets/StartPage.cs" Line="86" Column="35" />
+      <File FileName="Assets/Editor/SobotPostProcessBuild.cs" Line="1" Column="1" />
+      <File FileName="Assets/Plugins/Sobot/UZCSobotApi.cs" Line="99" Column="22" />
+      <File FileName="Library/PackageCache/com.unity.editorcoroutines@1.0.0/Editor/EditorCoroutine.cs" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="SobotClientSDKTest" expanded="True">
+            <Node name="Assets" expanded="True">
+              <Node name="Editor" expanded="True" />
+              <Node name="Plugins" expanded="True">
+                <Node name="Sobot" expanded="True">
+                  <Node name="iOS" expanded="True">
+                    <Node name="frameworks" expanded="True" />
+                  </Node>
+                  <Node name="UZCSobotApi.cs" selected="True" />
+                </Node>
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="ffdcdade-2318-4118-985c-c992964f0475" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+</Properties>
