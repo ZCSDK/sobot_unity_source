@@ -104,6 +104,10 @@ namespace SobotChatClient
     {
         private static ZCSobotApi _instance;
 
+        /// <summary>
+        /// 获取单例桥接对象，用于接收 iOS 的 UnitySendMessage 回调。
+        /// 该对象会在首次访问时自动创建并常驻场景。
+        /// </summary>
         public static ZCSobotApi Instance
         {
             get
@@ -118,10 +122,15 @@ namespace SobotChatClient
             }
         }
 
+        /// <summary>初始化结果回调。</summary>
         public delegate void InitResultCallback(bool success, string message);
+        /// <summary>离线消息数回调，返回未读、离线和未确认数量。</summary>
         public delegate void OfflineMsgCallback(int unReadSize, int offlineSize, int unAckSize);
+        /// <summary>链接点击回调，返回 <c>true</c> 表示由 Unity 侧拦截处理。</summary>
         public delegate bool LinkClickCallback(string linkUrl);
+        /// <summary>功能按钮点击回调。</summary>
         public delegate void FunctionClickCallback(int type);
+        /// <summary>主动发送消息结果回调。</summary>
         public delegate void SendMessageResultCallback(bool success, int code, string message);
 
         private static InitResultCallback _initCallback;
@@ -145,39 +154,51 @@ namespace SobotChatClient
         private static readonly IOSFunctionClickCallback _iosFunctionClickCallback = OnIOSFunctionClick;
 
         [DllImport("__Internal")]
+        /// <summary>iOS 初始化入口，对应 <c>SobotUnityBridge.mm</c> 中的 <c>_sobotInitSDK</c>。</summary>
         private static extern void _sobotInitSDK(string paramJson, string gameObjectName, string callbackMethod);
 
         [DllImport("__Internal")]
+        /// <summary>iOS 打开客服聊天入口。</summary>
         private static extern void _sobotOpenChat(string paramJson);
 
         [DllImport("__Internal")]
+        /// <summary>iOS 打开帮助中心入口。</summary>
         private static extern void _sobotOpenServiceCenter(string paramJson);
 
         [DllImport("__Internal")]
+        /// <summary>iOS 打开留言入口。</summary>
         private static extern void _sobotOpenLeave(string paramJson);
 
         [DllImport("__Internal")]
+        /// <summary>iOS 关闭当前会话入口。</summary>
         private static extern void _sobotCloseSession([MarshalAs(UnmanagedType.I1)] bool closePush);
 
         [DllImport("__Internal")]
+        /// <summary>iOS 获取离线消息数入口。</summary>
         private static extern void _sobotGetOfflineMsg(string paramJson, string gameObjectName, string callbackMethod);
 
         [DllImport("__Internal")]
+        /// <summary>iOS 注册链接点击监听。</summary>
         private static extern void _sobotSetLinkClickListener(IOSLinkClickCallback callback);
 
         [DllImport("__Internal")]
+        /// <summary>iOS 注册功能按钮点击监听。</summary>
         private static extern void _sobotSetFunctionClickListener(IOSFunctionClickCallback callback);
 
         [DllImport("__Internal")]
+        /// <summary>iOS 主动发送自定义卡片入口。</summary>
         private static extern void _sobotSendCustomCardToChat(string paramJson, string gameObjectName, string callbackMethod, string requestId);
 
         [DllImport("__Internal")]
+        /// <summary>iOS 主动发送商品卡片入口。</summary>
         private static extern void _sobotSendProductInfo(string paramJson, string gameObjectName, string callbackMethod, string requestId);
 
         [DllImport("__Internal")]
+        /// <summary>iOS 主动发送订单卡片入口。</summary>
         private static extern void _sobotSendOrderGoodsInfo(string paramJson, string gameObjectName, string callbackMethod, string requestId);
 
         [DllImport("__Internal")]
+        /// <summary>iOS 主动发送定位消息入口。</summary>
         private static extern void _sobotSendLocation(string paramJson, string gameObjectName, string callbackMethod, string requestId);
 #endif
 
@@ -194,6 +215,12 @@ namespace SobotChatClient
         }
 #endif
 
+        /// <summary>
+        /// 初始化智齿 SDK。
+        /// Unity 侧会根据当前平台分发到 Editor 模拟、Android 原生桥接或 iOS 原生桥接。
+        /// </summary>
+        /// <param name="param">初始化参数，至少需要包含 `app_key`，可选传入 `api_host` 和用户信息。</param>
+        /// <param name="callback">初始化结果回调，返回成功状态和错误信息。</param>
         public static void initSobotSDK(SobotParams param, InitResultCallback callback = null)
         {
             _initCallback = callback;
@@ -224,6 +251,8 @@ namespace SobotChatClient
 #endif
         }
 
+        /// <summary>打开智齿客服聊天页面。</summary>
+        /// <param name="param">打开聊天页所需参数，通常至少包含 `app_key` 和 `partnerid`。</param>
         public static void openSobotChat(SobotParams param)
         {
 #if UNITY_EDITOR
@@ -240,6 +269,8 @@ namespace SobotChatClient
 #endif
         }
 
+        /// <summary>打开智齿帮助中心页面。</summary>
+        /// <param name="param">打开帮助中心所需参数，通常至少包含 `app_key` 和 `partnerid`。</param>
         public static void openSobotHelpCenter(SobotParams param)
         {
 #if UNITY_EDITOR
@@ -256,6 +287,8 @@ namespace SobotChatClient
 #endif
         }
 
+        /// <summary>打开智齿留言页面。</summary>
+        /// <param name="param">打开留言页所需参数，通常至少包含 `app_key` 和 `partnerid`。</param>
         public static void openSobotLeave(SobotParams param)
         {
 #if UNITY_EDITOR
@@ -272,6 +305,9 @@ namespace SobotChatClient
 #endif
         }
 
+        /// <summary>查询离线消息和未读消息数量。</summary>
+        /// <param name="param">查询未读消息所需参数，通常至少包含 `app_key` 和 `partnerid`。</param>
+        /// <param name="callback">查询完成后的回调，返回未读、离线和未确认消息数量。</param>
         public static void getUnReadMessage(SobotParams param, OfflineMsgCallback callback)
         {
             _offlineMsgCallback = callback;
@@ -299,6 +335,8 @@ namespace SobotChatClient
 #endif
         }
 
+        /// <summary>关闭当前客服会话。</summary>
+        /// <param name="param">关闭会话所需参数，`closePush` 可控制是否同步关闭推送状态。</param>
         public static void closeSobotChat(SobotParams param)
         {
 #if UNITY_EDITOR
@@ -314,6 +352,11 @@ namespace SobotChatClient
 #endif
         }
 
+        /// <summary>
+        /// 注册消息中的链接点击监听。
+        /// 返回 <c>true</c> 时表示由 Unity 侧接管链接跳转。
+        /// </summary>
+        /// <param name="callback">链接点击回调，返回 `true` 表示由 Unity 侧拦截跳转。</param>
         public static void setMessageLinkClick(LinkClickCallback callback)
         {
             var inst = Instance;
@@ -335,6 +378,8 @@ namespace SobotChatClient
 #endif
         }
 
+        /// <summary>注册页面内功能按钮点击监听。</summary>
+        /// <param name="callback">功能按钮点击回调，参数为智齿定义的功能类型编号。</param>
         public static void setFunctionClickListener(FunctionClickCallback callback)
         {
             var inst = Instance;
@@ -356,6 +401,9 @@ namespace SobotChatClient
 #endif
         }
 
+        /// <summary>向聊天窗口主动发送自定义卡片。</summary>
+        /// <param name="param">自定义卡片参数，必须包含 `custom_card` 对象。</param>
+        /// <param name="callback">发送结果回调，可为空。</param>
         public static void sendCustomCardToChat(SobotParams param, SendMessageResultCallback callback = null)
         {
             if (!EnsureInitialized("sendCustomCardToChat", callback)) return;
@@ -376,6 +424,9 @@ namespace SobotChatClient
 #endif
         }
 
+        /// <summary>向聊天窗口主动发送商品卡片。</summary>
+        /// <param name="param">商品卡片参数，至少需要 `goodsTitle` 和 `goodsLink`。</param>
+        /// <param name="callback">发送结果回调，可为空。</param>
         public static void sendProductInfo(SobotParams param, SendMessageResultCallback callback = null)
         {
             if (!EnsureInitialized("sendProductInfo", callback)) return;
@@ -397,6 +448,9 @@ namespace SobotChatClient
 #endif
         }
 
+        /// <summary>向聊天窗口主动发送订单卡片。</summary>
+        /// <param name="param">订单卡片参数，至少需要 `orderCode`。</param>
+        /// <param name="callback">发送结果回调，可为空。</param>
         public static void sendOrderGoodsInfo(SobotParams param, SendMessageResultCallback callback = null)
         {
             if (!EnsureInitialized("sendOrderGoodsInfo", callback)) return;
@@ -417,6 +471,9 @@ namespace SobotChatClient
 #endif
         }
 
+        /// <summary>向聊天窗口主动发送位置消息。</summary>
+        /// <param name="param">位置消息参数，至少需要 `lat` 和 `lng`。</param>
+        /// <param name="callback">发送结果回调，可为空。</param>
         public static void sendLocation(SobotParams param, SendMessageResultCallback callback = null)
         {
             if (!EnsureInitialized("sendLocation", callback)) return;
@@ -438,12 +495,17 @@ namespace SobotChatClient
 #endif
         }
 
+        /// <summary>将参数对象序列化为 JSON，供 Android/iOS 原生层解析。</summary>
+        /// <param name="param">待序列化的参数对象。</param>
         private static string ToJson(SobotParams param)
         {
             string json = JsonUtility.ToJson(param ?? new SobotParams());
             return json.Replace("\"_params\"", "\"params\"");
         }
 
+        /// <summary>检查 SDK 是否已初始化；未初始化时返回错误给主动发送接口。</summary>
+        /// <param name="methodName">当前调用的方法名，用于错误提示。</param>
+        /// <param name="callback">需要回传错误结果的发送回调。</param>
         private static bool EnsureInitialized(string methodName, SendMessageResultCallback callback)
         {
             if (_isInitialized) return true;
@@ -454,6 +516,11 @@ namespace SobotChatClient
             return false;
         }
 
+        /// <summary>校验主动发送接口中必须存在的字符串字段。</summary>
+        /// <param name="value">需要检查的字段值。</param>
+        /// <param name="methodName">当前调用的方法名，用于错误提示。</param>
+        /// <param name="fieldName">字段名，用于错误提示。</param>
+        /// <param name="callback">需要回传错误结果的发送回调。</param>
         private static bool RequireString(string value, string methodName, string fieldName, SendMessageResultCallback callback)
         {
             if (!string.IsNullOrEmpty(value)) return true;
@@ -465,6 +532,10 @@ namespace SobotChatClient
         }
 
 #if UNITY_ANDROID && !UNITY_EDITOR
+        /// <summary>统一封装 Android 侧主动发送消息的调用与回调注册。</summary>
+        /// <param name="methodName">Android 桥接方法名。</param>
+        /// <param name="paramJson">传给原生层的 JSON 参数。</param>
+        /// <param name="callback">发送结果回调。</param>
         private static void InvokeAndroidActiveSend(string methodName, string paramJson, SendMessageResultCallback callback)
         {
             bool delivered = Bridge.CallStatic<bool>(methodName, paramJson);
@@ -480,6 +551,8 @@ namespace SobotChatClient
         }
 #endif
 
+        /// <summary>保存主动发送结果回调，并生成供原生层回传的请求 id。</summary>
+        /// <param name="callback">发送结果回调，可为空。</param>
         private static string StoreSendCallback(SendMessageResultCallback callback)
         {
             if (callback == null) return string.Empty;
@@ -489,6 +562,8 @@ namespace SobotChatClient
             return requestId;
         }
 
+        /// <summary>iOS 初始化结果回调入口，由原生层通过 UnitySendMessage 调用。</summary>
+        /// <param name="message">iOS 原生层回传的初始化结果字符串。</param>
         private void OnInitResult(string message)
         {
             Debug.Log($"[SobotSDK] OnInitResult: {message}");
@@ -497,6 +572,8 @@ namespace SobotChatClient
             _initCallback?.Invoke(success, message);
         }
 
+        /// <summary>iOS 离线消息结果回调入口。</summary>
+        /// <param name="data">iOS 原生层回传的离线消息结果字符串。</param>
         private void OnOfflineMsgResult(string data)
         {
             try
@@ -510,6 +587,8 @@ namespace SobotChatClient
             catch { _offlineMsgCallback?.Invoke(0, 0, 0); }
         }
 
+        /// <summary>iOS 主动发送消息结果回调入口。</summary>
+        /// <param name="data">iOS 原生层回传的主动发送结果字符串。</param>
         private void OnSendMessageResult(string data)
         {
             try
@@ -533,6 +612,8 @@ namespace SobotChatClient
 
 #if UNITY_IOS && !UNITY_EDITOR
         [AOT.MonoPInvokeCallback(typeof(IOSLinkClickCallback))]
+        /// <summary>iOS 链接点击回调转发到 Unity 业务层。</summary>
+        /// <param name="url">被点击的链接地址。</param>
         private static bool OnIOSLinkClick(string url)
         {
             try
@@ -549,6 +630,8 @@ namespace SobotChatClient
         }
 
         [AOT.MonoPInvokeCallback(typeof(IOSFunctionClickCallback))]
+        /// <summary>iOS 功能点击回调转发到 Unity 业务层。</summary>
+        /// <param name="type">智齿定义的功能按钮类型编号。</param>
         private static void OnIOSFunctionClick(int type)
         {
             try
@@ -567,9 +650,13 @@ namespace SobotChatClient
         private class AndroidOfflineMsgCallback : AndroidJavaProxy
         {
             private readonly OfflineMsgCallback _callback;
+            /// <summary>创建 Android 离线消息回调代理。</summary>
+            /// <param name="cb">离线消息结果回调。</param>
             public AndroidOfflineMsgCallback(OfflineMsgCallback cb)
                 : base("com.sobot.network.http.callback.StringResultCallBack") => _callback = cb;
 
+            /// <summary>Android SDK 获取离线消息成功时调用。</summary>
+            /// <param name="model">Android SDK 返回的离线消息模型。</param>
             public void onSuccess(AndroidJavaObject model)
             {
                 _callback?.Invoke(
@@ -579,6 +666,9 @@ namespace SobotChatClient
                 );
             }
 
+            /// <summary>Android SDK 获取离线消息失败时调用。</summary>
+            /// <param name="e">Android SDK 的异常对象。</param>
+            /// <param name="des">失败描述。</param>
             public void onFailure(AndroidJavaObject e, string des)
             {
                 Debug.LogError($"[SobotSDK] getUnReadMessage failed: {des}");
@@ -589,9 +679,14 @@ namespace SobotChatClient
         private class AndroidLinkClickListener : AndroidJavaProxy
         {
             private readonly LinkClickCallback _callback;
+            /// <summary>创建 Android 链接点击监听代理。</summary>
+            /// <param name="cb">链接点击回调。</param>
             public AndroidLinkClickListener(LinkClickCallback cb)
                 : base("com.sobot.chat.listener.NewHyperlinkListener") => _callback = cb;
 
+            /// <summary>Android URL 链接点击回调。</summary>
+            /// <param name="context">当前 Android 上下文。</param>
+            /// <param name="url">点击的 URL。</param>
             public bool onUrlClick(AndroidJavaObject context, string url)
             {
                 bool handled = _callback?.Invoke(url) ?? false;
@@ -599,12 +694,18 @@ namespace SobotChatClient
                 return handled;
             }
 
+            /// <summary>Android 邮箱链接点击回调。</summary>
+            /// <param name="context">当前 Android 上下文。</param>
+            /// <param name="email">点击的邮箱地址。</param>
             public bool onEmailClick(AndroidJavaObject context, string email)
             {
                 Debug.Log($"[SobotSDK] Android email click email={email}");
                 return false;
             }
 
+            /// <summary>Android 电话链接点击回调。</summary>
+            /// <param name="context">当前 Android 上下文。</param>
+            /// <param name="phone">点击的电话号码。</param>
             public bool onPhoneClick(AndroidJavaObject context, string phone)
             {
                 Debug.Log($"[SobotSDK] Android phone click phone={phone}");
@@ -615,9 +716,14 @@ namespace SobotChatClient
         private class AndroidFunctionClickListener : AndroidJavaProxy
         {
             private readonly FunctionClickCallback _callback;
+            /// <summary>创建 Android 功能按钮点击监听代理。</summary>
+            /// <param name="cb">功能点击回调。</param>
             public AndroidFunctionClickListener(FunctionClickCallback cb)
                 : base("com.sobot.chat.listener.SobotFunctionClickListener") => _callback = cb;
 
+            /// <summary>Android 功能按钮点击回调。</summary>
+            /// <param name="context">当前 Android 上下文。</param>
+            /// <param name="functionType">Android SDK 返回的功能类型枚举对象。</param>
             public void onClickFunction(AndroidJavaObject context, AndroidJavaObject functionType)
             {
                 int type = ConvertAndroidFunctionType(functionType);
@@ -625,6 +731,8 @@ namespace SobotChatClient
                 _callback?.Invoke(type);
             }
 
+            /// <summary>把 Android 枚举对象转换为 Unity 层使用的整数类型。</summary>
+            /// <param name="functionType">Android SDK 返回的功能类型枚举对象。</param>
             private static int ConvertAndroidFunctionType(AndroidJavaObject functionType)
             {
                 if (functionType == null) return 0;
