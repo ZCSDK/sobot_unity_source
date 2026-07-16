@@ -48,6 +48,11 @@ public class SobotBridge {
     private static final String ACTION_SEND_CUSTOM_CARD = "SOBOT_BROCAST_ACTION_SEND_CUSTOM_CARD";
     private static final String ACTION_SEND_LOCATION = "SOBOT_BROCAST_ACTION_SEND_LOCATION";
 
+    /**
+     * 初始化智齿 Android SDK。
+     * paramJson 来自 Unity 的 SobotParams JSON，主要读取 app_key 和 api_host。
+     * @param paramJson Unity 侧传入的 SobotParams JSON，读取 app_key、api_host 等初始化参数。
+     */
     public static void initSobotSDK(String paramJson) {
         try {
             JSONObject params = parse(paramJson);
@@ -63,6 +68,11 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 打开智齿客服聊天页面。
+     * 会先把 Unity 参数转换为 Android SDK 的 Information 对象。
+     * @param paramJson Unity 侧传入的 SobotParams JSON，用于打开客服聊天页。
+     */
     public static void openSobotChat(String paramJson) {
         try {
             Activity activity = UnityPlayer.currentActivity;
@@ -73,6 +83,10 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 打开智齿帮助中心页面。
+     * @param paramJson Unity 侧传入的 SobotParams JSON，用于打开帮助中心。
+     */
     public static void openSobotHelpCenter(String paramJson) {
         try {
             Activity activity = UnityPlayer.currentActivity;
@@ -83,6 +97,10 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 打开智齿留言页面。
+     * @param paramJson Unity 侧传入的 SobotParams JSON，用于打开留言页。
+     */
     public static void openSobotLeave(String paramJson) {
         try {
             Activity activity = UnityPlayer.currentActivity;
@@ -93,6 +111,12 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 获取离线消息和未读消息数量。
+     * 结果通过 Unity 侧传入的 StringResultCallBack 返回。
+     * @param paramJson Unity 侧传入的 SobotParams JSON，用于查询未读消息。
+     * @param callback Unity 层回传结果的回调。
+     */
     public static void getUnReadMessage(String paramJson, StringResultCallBack callback) {
         try {
             JSONObject params = parse(paramJson);
@@ -108,6 +132,11 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 退出当前智齿用户会话。
+     * closePush=true 时同时关闭推送相关状态。
+     * @param paramJson Unity 侧传入的 SobotParams JSON，当前主要用于携带 closePush。
+     */
     public static void closeSobotChat(String paramJson) {
         try {
             Activity activity = UnityPlayer.currentActivity;
@@ -117,6 +146,11 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 注册消息链接点击监听。
+     * Unity 侧返回 true 时表示拦截默认跳转。
+     * @param listener 消息链接点击监听器，由 Unity 层决定是否拦截跳转。
+     */
     public static void setMessageLinkClick(NewHyperlinkListener listener) {
         try {
             ZCSobotApi.setNewHyperlinkListener(listener);
@@ -125,6 +159,10 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 注册智齿页面功能按钮点击监听。
+     * @param listener 功能按钮点击监听器。
+     */
     public static void setFunctionClickListener(SobotFunctionClickListener listener) {
         try {
             ZCSobotApi.setFunctionClickListener(listener);
@@ -133,6 +171,10 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 主动发送自定义卡片消息。
+     * @param paramJson Unity 侧传入的 SobotParams JSON，其中 custom_card 为必填。
+     */
     public static boolean sendCustomCardToChat(String paramJson) {
         try {
             Activity activity = UnityPlayer.currentActivity;
@@ -151,6 +193,10 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 主动发送商品卡片消息。
+     * @param paramJson Unity 侧传入的 SobotParams JSON，其中 goodsTitle 和 goodsLink 为核心字段。
+     */
     public static boolean sendProductInfo(String paramJson) {
         try {
             Activity activity = UnityPlayer.currentActivity;
@@ -164,6 +210,10 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 主动发送订单卡片消息。
+     * @param paramJson Unity 侧传入的 SobotParams JSON，其中 orderCode 为核心字段。
+     */
     public static boolean sendOrderGoodsInfo(String paramJson) {
         try {
             Activity activity = UnityPlayer.currentActivity;
@@ -177,6 +227,10 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 主动发送位置消息。
+     * @param paramJson Unity 侧传入的 SobotParams JSON，其中 lat 和 lng 为必填。
+     */
     public static boolean sendLocation(String paramJson) {
         try {
             Activity activity = UnityPlayer.currentActivity;
@@ -190,6 +244,11 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 根据 Unity 参数构造 Android SDK 的 Information 对象。
+     * 使用反射设置字段，降低不同 Android SDK 版本方法差异带来的兼容风险。
+     * @param params Unity 参数解析后的 JSON 对象。
+     */
     private static Object buildInformation(JSONObject params) throws Exception {
         Object info = newSdkObject(INFORMATION_CLASS);
 
@@ -232,6 +291,11 @@ public class SobotBridge {
         return info;
     }
 
+    /**
+     * 应用 Android SDK 的全局 UI 和调试配置。
+     * @param context 当前 Android Context。
+     * @param params Unity 参数解析后的 JSON 对象。
+     */
     private static void applyAndroidGlobalOptions(Context context, JSONObject params) {
         applyInternationalLanguage(context, optString(params, "absolute_language"));
         applyUrlRegular(optString(params, "urlRegular"));
@@ -278,6 +342,11 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 设置 Android SDK 国际化语言。
+     * @param context 当前 Android Context。
+     * @param value 语言标识字符串，例如 zh、en 等。
+     */
     private static void applyInternationalLanguage(Context context, String value) {
         if (isEmpty(value)) return;
         try {
@@ -288,6 +357,10 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 设置 URL 识别正则。
+     * @param value URL 识别正则表达式。
+     */
     private static void applyUrlRegular(String value) {
         if (isEmpty(value)) return;
         try {
@@ -298,6 +371,10 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 设置电话识别正则。
+     * @param value 电话识别正则表达式。
+     */
     private static void applyTelRegular(String value) {
         if (isEmpty(value)) return;
         try {
@@ -308,6 +385,13 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 通过 LocalBroadcastManager 向智齿聊天页面发送卡片或位置消息。
+     * @param context 当前 Android Context。
+     * @param action 广播 action。
+     * @param extraKey 附加数据 key。
+     * @param data 需要随广播发送的数据对象。
+     */
     private static boolean sendSobotLocalBroadcast(Context context, String action, String extraKey, Object data) throws Exception {
         if (context == null || data == null) return false;
         if (!(data instanceof Serializable)) {
@@ -332,6 +416,11 @@ public class SobotBridge {
         return success;
     }
 
+    /**
+     * 配置商品卡片和订单卡片的自动发送策略。
+     * @param info Information 对象。
+     * @param params Unity 参数解析后的 JSON 对象。
+     */
     private static void applyAutoSendMsgMode(Object info, JSONObject params) {
         Integer goodMsgType = optInt(params, "good_msg_type");
         String content = optString(params, "content");
@@ -365,6 +454,10 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 解析 Unity 传入的 JSON 字符串。
+     * @param paramJson Unity 传入的 JSON 字符串。
+     */
     private static JSONObject parse(String paramJson) throws Exception {
         if (paramJson == null || paramJson.length() == 0) {
             return new JSONObject();
@@ -372,15 +465,31 @@ public class SobotBridge {
         return new JSONObject(paramJson);
     }
 
+    /**
+     * 读取字符串字段，并把缺失值统一转为空字符串。
+     * @param params 参数 JSON 对象。
+     * @param key 字段名。
+     */
     private static String optString(JSONObject params, String key) {
         return params.optString(key, "");
     }
 
+    /**
+     * 读取布尔字段，支持默认值。
+     * @param params 参数 JSON 对象。
+     * @param key 字段名。
+     * @param defaultValue 字段缺失时返回的默认值。
+     */
     private static boolean optBoolean(JSONObject params, String key, boolean defaultValue) {
         if (!params.has(key)) return defaultValue;
         return params.optBoolean(key, defaultValue);
     }
 
+    /**
+     * 读取整数字段，字段缺失或为空时返回 null。
+     * @param params 参数 JSON 对象。
+     * @param key 字段名。
+     */
     private static Integer optInt(JSONObject params, String key) {
         if (!params.has(key)) return null;
         try {
@@ -395,10 +504,19 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 判断字符串是否为空。
+     * @param value 待判断字符串。
+     */
     private static boolean isEmpty(String value) {
         return value == null || value.length() == 0;
     }
 
+    /**
+     * 判断多个字段中是否至少存在一个有效值。
+     * @param params 参数 JSON 对象。
+     * @param keys 需要检查的字段名列表。
+     */
     private static boolean hasAnyValue(JSONObject params, String... keys) {
         for (String key : keys) {
             if (!isEmpty(optString(params, key))) return true;
@@ -406,11 +524,21 @@ public class SobotBridge {
         return false;
     }
 
+    /**
+     * 将商品卡片信息写入 Information。
+     * @param info Information 对象。
+     * @param params Unity 参数解析后的 JSON 对象。
+     */
     private static void applyConsultingContent(Object info, JSONObject params) throws Exception {
         Object content = buildConsultingContent(params, false);
         if (content != null) applyObjectSetter(info, "setContent", content);
     }
 
+    /**
+     * 构造 Android 商品卡片 ConsultingContent。
+     * @param params Unity 参数解析后的 JSON 对象。
+     * @param requireFields 是否要求核心字段必须存在。
+     */
     private static Object buildConsultingContent(JSONObject params, boolean requireFields) throws Exception {
         if (!hasAnyValue(params, "goodsTitle", "goodsDesc", "goodsLabel", "goodsLink", "goodsImage")) {
             return null;
@@ -434,11 +562,21 @@ public class SobotBridge {
         return content;
     }
 
+    /**
+     * 将订单卡片信息写入 Information。
+     * @param info Information 对象。
+     * @param params Unity 参数解析后的 JSON 对象。
+     */
     private static void applyOrderGoodsInfo(Object info, JSONObject params) throws Exception {
         Object order = buildOrderGoodsInfo(params, false);
         if (order != null) applyObjectSetter(info, "setOrderGoodsInfo", order);
     }
 
+    /**
+     * 构造 Android 订单卡片模型。
+     * @param params Unity 参数解析后的 JSON 对象。
+     * @param requireFields 是否要求核心字段必须存在。
+     */
     private static Object buildOrderGoodsInfo(JSONObject params, boolean requireFields) throws Exception {
         if (!hasAnyValue(params, "orderCode", "orderStatus", "statusCustom", "createTime", "goodsCount", "orderUrl", "goods", "totalFee")) {
             return null;
@@ -482,6 +620,10 @@ public class SobotBridge {
         return order;
     }
 
+    /**
+     * 构造 Android 位置消息模型。
+     * @param params Unity 参数解析后的 JSON 对象。
+     */
     private static Object buildLocation(JSONObject params) throws Exception {
         String lat = optString(params, "lat");
         String lng = optString(params, "lng");
@@ -499,6 +641,11 @@ public class SobotBridge {
         return location;
     }
 
+    /**
+     * 写入自定义卡片参数。
+     * @param info Information 对象。
+     * @param params Unity 参数解析后的 JSON 对象。
+     */
     private static void applyCustomCard(Object info, JSONObject params) throws Exception {
         JSONObject cardJson = optJSONObject(params, "custom_card");
         if (cardJson == null) return;
@@ -506,6 +653,10 @@ public class SobotBridge {
         applyObjectSetter(info, "setCustomCard", buildCustomCard(cardJson));
     }
 
+    /**
+     * 将 custom_card JSON 转换为 Android SDK 的 SobotChatCustomCard。
+     * @param cardJson custom_card 子对象。
+     */
     private static Object buildCustomCard(JSONObject cardJson) throws Exception {
         Object card = newSdkObject(CUSTOM_CARD_CLASS);
         applyStringSetter(card, "setOriginalInfo", cardJson.toString());
@@ -590,6 +741,10 @@ public class SobotBridge {
         return card;
     }
 
+    /**
+     * 构造自定义卡片菜单列表。
+     * @param menuArray 菜单数组。
+     */
     private static List<Object> buildCustomMenus(JSONArray menuArray) throws Exception {
         List<Object> menus = new ArrayList<>();
         Class<?> menuClass = Class.forName(CUSTOM_MENU_CLASS);
@@ -611,6 +766,11 @@ public class SobotBridge {
         return menus;
     }
 
+    /**
+     * 读取对象字段，兼容字段值本身就是 JSON 字符串的情况。
+     * @param params 参数 JSON 对象。
+     * @param key 字段名。
+     */
     private static JSONObject optJSONObject(JSONObject params, String key) {
         Object value = params.opt(key);
         if (value instanceof JSONObject) return (JSONObject) value;
@@ -624,6 +784,11 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 读取数组字段，兼容字段值本身就是 JSON 字符串的情况。
+     * @param params 参数 JSON 对象。
+     * @param key 字段名。
+     */
     private static JSONArray optJSONArray(JSONObject params, String key) {
         Object value = params.opt(key);
         if (value instanceof JSONArray) return (JSONArray) value;
@@ -637,6 +802,10 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 将 JSONObject 转换为 Object Map，保留数组和对象结构。
+     * @param json 待转换的 JSONObject。
+     */
     private static Map<String, Object> jsonObjectToObjectMap(JSONObject json) {
         Map<String, Object> map = new HashMap<>();
         Iterator<String> keys = json.keys();
@@ -654,6 +823,10 @@ public class SobotBridge {
         return map;
     }
 
+    /**
+     * 将 JSONObject 转换为字符串 Map，便于 Android SDK 直接消费。
+     * @param json 待转换的 JSONObject。
+     */
     private static Map<String, String> jsonObjectToStringMap(JSONObject json) {
         Map<String, String> map = new HashMap<>();
         Iterator<String> keys = json.keys();
@@ -664,6 +837,10 @@ public class SobotBridge {
         return map;
     }
 
+    /**
+     * 将 JSONArray 转换为普通 List。
+     * @param array 待转换的 JSONArray。
+     */
     private static List<Object> jsonArrayToList(JSONArray array) {
         List<Object> list = new ArrayList<>();
         for (int i = 0; i < array.length(); i++) {
@@ -679,6 +856,10 @@ public class SobotBridge {
         return list;
     }
 
+    /**
+     * 设置私有化或指定环境的 API Host。
+     * @param api_host 需要写入的接口地址。
+     */
     private static void applyApiHost(String api_host) {
         if (isEmpty(api_host)) return;
         String[] classNames = {
@@ -697,10 +878,19 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 按类名创建 Android SDK 对象。
+     * @param className Android SDK 的完整类名。
+     */
     private static Object newSdkObject(String className) throws Exception {
         return Class.forName(className).getDeclaredConstructor().newInstance();
     }
 
+    /**
+     * 兼容不同版本 Android SDK 的静态方法调用。
+     * @param methodName Android SDK 静态方法名。
+     * @param args 静态方法参数。
+     */
     private static void invokeSobotApi(String methodName, Object... args) throws Exception {
         Method method = findCompatibleStaticMethod(ZCSobotApi.class, methodName, args);
         if (method == null) {
@@ -709,6 +899,12 @@ public class SobotBridge {
         method.invoke(null, args);
     }
 
+    /**
+     * 查找参数数量和类型兼容的静态方法。
+     * @param clazz 目标类。
+     * @param methodName 方法名。
+     * @param args 方法参数。
+     */
     private static Method findCompatibleStaticMethod(Class<?> clazz, String methodName, Object[] args) {
         Method[] methods = clazz.getMethods();
         for (Method method : methods) {
@@ -729,6 +925,11 @@ public class SobotBridge {
         return null;
     }
 
+    /**
+     * 判断反射调用参数是否可赋值或可自动装箱。
+     * @param parameterType 方法参数类型。
+     * @param arg 实际参数对象。
+     */
     private static boolean isCompatibleParam(Class<?> parameterType, Object arg) {
         if (arg == null) return !parameterType.isPrimitive();
         if (parameterType.isPrimitive()) {
@@ -745,6 +946,13 @@ public class SobotBridge {
         return parameterType.isAssignableFrom(arg.getClass());
     }
 
+    /**
+     * 安全调用字符串 setter，空值不写入。
+     *
+     * @param target 目标对象。
+     * @param methodName setter 名称。
+     * @param value 要写入的字符串值。
+     */
     private static void applyStringSetter(Object target, String methodName, String value) {
         if (isEmpty(value)) return;
         try {
@@ -755,10 +963,24 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 安全调用 int setter。
+     *
+     * @param target 目标对象。
+     * @param methodName setter 名称。
+     * @param value 要写入的整数值。
+     */
     private static void applyIntSetter(Object target, String methodName, int value) {
         applyIntSetter(target, methodName, Integer.valueOf(value));
     }
 
+    /**
+     * 安全调用可空 int setter。
+     *
+     * @param target 目标对象。
+     * @param methodName setter 名称。
+     * @param value 要写入的可空整数值。
+     */
     private static void applyIntSetter(Object target, String methodName, Integer value) {
         if (value == null) return;
         try {
@@ -769,6 +991,13 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 安全调用对象 setter。
+     *
+     * @param target 目标对象。
+     * @param methodName setter 名称。
+     * @param value 要写入的对象值。
+     */
     private static void applyObjectSetter(Object target, String methodName, Object value) {
         if (value == null) return;
         try {
@@ -783,11 +1012,26 @@ public class SobotBridge {
         }
     }
 
+    /**
+     * 仅在参数存在时调用 boolean setter。
+     *
+     * @param target 目标对象。
+     * @param methodName setter 名称。
+     * @param params 参数 JSON 对象。
+     * @param key 字段名。
+     */
     private static void applyOptionalBooleanSetter(Object target, String methodName, JSONObject params, String key) {
         if (!params.has(key)) return;
         applyBooleanSetter(target, methodName, params.optBoolean(key));
     }
 
+    /**
+     * 查找参数类型兼容的实例方法。
+     *
+     * @param clazz 目标类。
+     * @param methodName 方法名。
+     * @param arg 实际参数对象。
+     */
     private static Method findCompatibleInstanceMethod(Class<?> clazz, String methodName, Object arg) {
         Method[] methods = clazz.getMethods();
         for (Method method : methods) {
@@ -800,6 +1044,13 @@ public class SobotBridge {
         return null;
     }
 
+    /**
+     * 安全调用 boolean setter。
+     *
+     * @param target 目标对象。
+     * @param methodName setter 名称。
+     * @param value 要写入的布尔值。
+     */
     private static void applyBooleanSetter(Object target, String methodName, boolean value) {
         try {
             Method method = target.getClass().getMethod(methodName, boolean.class);
