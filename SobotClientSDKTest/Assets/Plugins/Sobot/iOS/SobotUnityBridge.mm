@@ -13,10 +13,22 @@ static SobotUnityLinkClickCallback s_linkClickCallback = nullptr;
 typedef void (*SobotUnityFunctionClickCallback)(int type);
 static SobotUnityFunctionClickCallback s_functionClickCallback = nullptr;
 
+/*
+ * 将 C 字符串安全转换为 NSString。
+ * @param str C 字符串。
+ */
 static NSString* toNSString(const char* str) {
     return str ? [NSString stringWithUTF8String:str] : @"";
 }
 
+/*
+ * 组装主动发送结果，并通过 UnitySendMessage 回传。
+ * @param obj Unity 对象名。
+ * @param method Unity 方法名。
+ * @param requestId 发送请求 id。
+ * @param msg 返回消息。
+ * @param code 返回码。
+ */
 static void sendUnitySendResultWithNames(NSString *obj, NSString *method, NSString *requestId, NSString *msg, int code) {
     if (obj.length == 0 || method.length == 0) return;
 
@@ -26,6 +38,10 @@ static void sendUnitySendResultWithNames(NSString *obj, NSString *method, NSStri
     UnitySendMessage([obj UTF8String], [method UTF8String], [payload UTF8String]);
 }
 
+/*
+ * 将 Unity 传入的 JSON 字符串解析为 NSDictionary。
+ * @param json Unity 传入的 JSON 字符串。
+ */
 static NSDictionary* parseJson(const char* json) {
     NSString *jsonString = toNSString(json);
     if (jsonString.length == 0) return @{};
@@ -40,6 +56,11 @@ static NSDictionary* parseJson(const char* json) {
     return @{};
 }
 
+/*
+ * 读取字符串参数，缺失时返回空串。
+ * @param dict 参数字典。
+ * @param key 字段名。
+ */
 static NSString* stringValue(NSDictionary *dict, NSString *key) {
     id value = dict[key];
     if (value == nil || value == [NSNull null]) return @"";
@@ -48,6 +69,11 @@ static NSString* stringValue(NSDictionary *dict, NSString *key) {
     return [NSString stringWithFormat:@"%@", value];
 }
 
+/*
+ * 读取整数参数，缺失时返回 0。
+ * @param dict 参数字典。
+ * @param key 字段名。
+ */
 static int intValue(NSDictionary *dict, NSString *key) {
     id value = dict[key];
     if (value == nil || value == [NSNull null]) return 0;
@@ -55,6 +81,11 @@ static int intValue(NSDictionary *dict, NSString *key) {
     return 0;
 }
 
+/*
+ * 读取布尔参数，缺失时返回 NO。
+ * @param dict 参数字典。
+ * @param key 字段名。
+ */
 static BOOL boolValue(NSDictionary *dict, NSString *key) {
     id value = dict[key];
     if (value == nil || value == [NSNull null]) return NO;
@@ -62,11 +93,21 @@ static BOOL boolValue(NSDictionary *dict, NSString *key) {
     return NO;
 }
 
+/*
+ * 判断参数是否显式传入。
+ * @param dict 参数字典。
+ * @param key 字段名。
+ */
 static BOOL hasValue(NSDictionary *dict, NSString *key) {
     id value = dict[key];
     return value != nil && value != [NSNull null];
 }
 
+/*
+ * 读取对象参数，兼容字符串 JSON 和原生字典。
+ * @param dict 参数字典。
+ * @param key 字段名。
+ */
 static NSDictionary* jsonDictValue(NSDictionary *dict, NSString *key) {
     id value = dict[key];
     if ([value isKindOfClass:[NSDictionary class]]) return (NSDictionary *)value;
@@ -79,6 +120,11 @@ static NSDictionary* jsonDictValue(NSDictionary *dict, NSString *key) {
     return [object isKindOfClass:[NSDictionary class]] ? (NSDictionary *)object : nil;
 }
 
+/*
+ * 读取数组参数，兼容字符串 JSON 和原生数组。
+ * @param dict 参数字典。
+ * @param key 字段名。
+ */
 static NSArray* jsonArrayValue(NSDictionary *dict, NSString *key) {
     id value = dict[key];
     if ([value isKindOfClass:[NSArray class]]) return (NSArray *)value;
@@ -91,6 +137,9 @@ static NSArray* jsonArrayValue(NSDictionary *dict, NSString *key) {
     return [object isKindOfClass:[NSArray class]] ? (NSArray *)object : nil;
 }
 
+/*
+ * 获取当前最上层 UIViewController，作为智齿页面展示入口。
+ */
 static UIViewController* topViewController() {
     UIViewController *vc = [UIApplication sharedApplication].keyWindow.rootViewController;
     while (vc.presentedViewController) {
@@ -99,11 +148,21 @@ static UIViewController* topViewController() {
     return vc;
 }
 
+/*
+ * 字符串字段存在时才写入 iOS SDK 对象。
+ * @param setter 写入字符串的 block。
+ * @param params 参数字典。
+ * @param key 字段名。
+ */
 static void setStringIfPresent(void (^setter)(NSString *), NSDictionary *params, NSString *key) {
     NSString *value = stringValue(params, key);
     if (value.length > 0) setter(value);
 }
 
+/*
+ * 构造自定义卡片中的单个菜单按钮。
+ * @param dict 菜单字典。
+ */
 static SobotChatCustomCardMenu* buildCustomCardMenu(NSDictionary *dict) {
     SobotChatCustomCardMenu *menu = [SobotChatCustomCardMenu new];
     menu.menuType = intValue(dict, @"menuType");
@@ -116,6 +175,10 @@ static SobotChatCustomCardMenu* buildCustomCardMenu(NSDictionary *dict) {
     return menu;
 }
 
+/*
+ * 构造自定义卡片菜单数组。
+ * @param array 菜单数组。
+ */
 static NSMutableArray* buildCustomCardMenus(NSArray *array) {
     NSMutableArray *menus = [NSMutableArray array];
     for (id item in array) {
@@ -125,6 +188,10 @@ static NSMutableArray* buildCustomCardMenus(NSArray *array) {
     return menus;
 }
 
+/*
+ * 构造自定义卡片中的商品/信息项。
+ * @param dict 卡片信息字典。
+ */
 static SobotChatCustomCardInfo* buildCustomCardInfo(NSDictionary *dict) {
     SobotChatCustomCardInfo *info = [SobotChatCustomCardInfo new];
     info.sourceDict = dict;
@@ -163,6 +230,10 @@ static SobotChatCustomCardInfo* buildCustomCardInfo(NSDictionary *dict) {
     return info;
 }
 
+/*
+ * 构造 iOS SDK 的自定义卡片对象。
+ * @param dict 自定义卡片字典。
+ */
 static SobotChatCustomCard* buildCustomCard(NSDictionary *dict) {
     SobotChatCustomCard *card = [SobotChatCustomCard new];
     card.sourceDict = dict;
@@ -204,6 +275,11 @@ static SobotChatCustomCard* buildCustomCard(NSDictionary *dict) {
     return card;
 }
 
+/*
+ * 将 custom_card 参数写入初始化配置。
+ * @param initInfo 初始化配置对象。
+ * @param params 参数字典。
+ */
 static void applyCustomCard(ZCLibInitInfo *initInfo, NSDictionary *params) {
     NSDictionary *customCardDict = jsonDictValue(params, @"custom_card");
     if (customCardDict == nil) return;
@@ -214,6 +290,10 @@ static void applyCustomCard(ZCLibInitInfo *initInfo, NSDictionary *params) {
     }
 }
 
+/*
+ * 构造商品卡片信息。
+ * @param params 参数字典。
+ */
 static ZCProductInfo* buildProductInfo(NSDictionary *params) {
     NSString *title = stringValue(params, @"goodsTitle");
     NSString *link = stringValue(params, @"goodsLink");
@@ -237,6 +317,10 @@ static ZCProductInfo* buildProductInfo(NSDictionary *params) {
     return productInfo;
 }
 
+/*
+ * 构造订单卡片信息。
+ * @param params 参数字典。
+ */
 static ZCOrderGoodsModel* buildOrderGoodsInfo(NSDictionary *params) {
     NSString *orderCode = stringValue(params, @"orderCode");
     NSString *orderStatus = stringValue(params, @"orderStatus");
@@ -271,6 +355,10 @@ static ZCOrderGoodsModel* buildOrderGoodsInfo(NSDictionary *params) {
     return orderInfo;
 }
 
+/*
+ * 构造位置消息字典。
+ * @param params 参数字典。
+ */
 static NSDictionary* buildLocationDict(NSDictionary *params) {
     NSString *lat = stringValue(params, @"lat");
     NSString *lng = stringValue(params, @"lng");
@@ -288,6 +376,9 @@ static NSDictionary* buildLocationDict(NSDictionary *params) {
     return locations;
 }
 
+/*
+ * 注册消息链接点击回调。
+ */
 static void registerMessageLinkClickHandler() {
     if (s_linkClickCallback == nullptr) {
         return;
@@ -305,6 +396,9 @@ static void registerMessageLinkClickHandler() {
     NSLog(@"[SobotUnityBridge] message link click handler registered");
 }
 
+/*
+ * 注册功能点击回调。
+ */
 static void registerFunctionClickHandler() {
     if (s_functionClickCallback == nullptr) {
         return;
@@ -318,6 +412,9 @@ static void registerFunctionClickHandler() {
     NSLog(@"[SobotUnityBridge] function click handler registered");
 }
 
+/*
+ * 请求 iOS 本地通知权限。
+ */
 static void requestLocalNotificationPermission() {
     UNAuthorizationOptions options = UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
     [[UNUserNotificationCenter currentNotificationCenter] requestAuthorizationWithOptions:options completionHandler:^(BOOL granted, NSError * _Nullable error) {
@@ -327,6 +424,11 @@ static void requestLocalNotificationPermission() {
     }];
 }
 
+/*
+ * 将 Unity 参数写入 ZCLibClient。
+ * @param client ZCLibClient 对象。
+ * @param params 参数字典。
+ */
 static void applyClientOptions(ZCLibClient *client, NSDictionary *params) {
     NSString *deviceToken = stringValue(params, @"deviceToken");
     if ([deviceToken length] > 0) {
@@ -342,6 +444,10 @@ static void applyClientOptions(ZCLibClient *client, NSDictionary *params) {
     }
 }
 
+/*
+ * 将 Unity 公共参数写入 iOS 初始化配置，并返回 ZCLibInitInfo。
+ * @param params 参数字典。
+ */
 static ZCLibInitInfo* applyInitInfo(NSDictionary *params) {
     ZCLibClient *client = [ZCLibClient getZCLibClient];
     applyClientOptions(client, params);
@@ -386,6 +492,10 @@ static ZCLibInitInfo* applyInitInfo(NSDictionary *params) {
     return initInfo;
 }
 
+/*
+ * 根据 Unity 参数构造 iOS SDK 的 ZCKitInfo。
+ * @param params 参数字典。
+ */
 static ZCKitInfo* buildKitInfo(NSDictionary *params) {
     ZCKitInfo *kitInfo = [ZCKitInfo new];
     setStringIfPresent(^(NSString *v) { kitInfo.leaveMsgGroupId = v; }, params, @"leaveMsgGroupId");
@@ -424,6 +534,12 @@ static ZCKitInfo* buildKitInfo(NSDictionary *params) {
 
 #pragma mark - 初始化
 
+/*
+ * 初始化智齿 iOS SDK，并在完成后通过 UnitySendMessage 回传结果。
+ * @param paramJson Unity 传入的参数 JSON。
+ * @param gameObjectName Unity 回调对象名。
+ * @param callbackMethod Unity 回调方法名。
+ */
 extern "C" void _sobotInitSDK(const char* paramJson, const char* gameObjectName, const char* callbackMethod) {
     NSDictionary *params = parseJson(paramJson);
     NSString *key = stringValue(params, @"app_key");
@@ -445,6 +561,10 @@ extern "C" void _sobotInitSDK(const char* paramJson, const char* gameObjectName,
 
 #pragma mark - 启动聊天
 
+/*
+ * 打开智齿客服聊天页面。
+ * @param paramJson Unity 传入的参数 JSON。
+ */
 extern "C" void _sobotOpenChat(const char* paramJson) {
     NSDictionary *params = parseJson(paramJson);
 
@@ -467,6 +587,10 @@ extern "C" void _sobotOpenChat(const char* paramJson) {
 
 #pragma mark - 启动帮助中心
 
+/*
+ * 打开智齿帮助中心页面。
+ * @param paramJson Unity 传入的参数 JSON。
+ */
 extern "C" void _sobotOpenServiceCenter(const char* paramJson) {
     NSDictionary *params = parseJson(paramJson);
 
@@ -485,6 +609,10 @@ extern "C" void _sobotOpenServiceCenter(const char* paramJson) {
 
 #pragma mark - 启动留言
 
+/*
+ * 打开智齿留言页面。
+ * @param paramJson Unity 传入的参数 JSON。
+ */
 extern "C" void _sobotOpenLeave(const char* paramJson) {
     NSDictionary *params = parseJson(paramJson);
 
@@ -503,6 +631,10 @@ extern "C" void _sobotOpenLeave(const char* paramJson) {
 
 #pragma mark - 关闭会话
 
+/*
+ * 关闭当前会话。closePush 用于同步关闭推送状态。
+ * @param closePush 是否同步关闭推送状态。
+ */
 extern "C" void _sobotCloseSession(bool closePush) {
     dispatch_async(dispatch_get_main_queue(), ^{
         [ZCSobotApi outCurrentUserZCLibInfo:closePush];
@@ -511,6 +643,12 @@ extern "C" void _sobotCloseSession(bool closePush) {
 
 #pragma mark - 获取离线消息数
 
+/*
+ * 获取离线消息数，并把结果回传给 Unity。
+ * @param paramJson Unity 传入的参数 JSON。
+ * @param gameObjectName Unity 回调对象名。
+ * @param callbackMethod Unity 回调方法名。
+ */
 extern "C" void _sobotGetOfflineMsg(const char* paramJson,
                                      const char* gameObjectName,
                                      const char* callbackMethod) {
@@ -532,6 +670,13 @@ extern "C" void _sobotGetOfflineMsg(const char* paramJson,
 
 #pragma mark - 主动发送消息
 
+/*
+ * 主动发送自定义卡片。
+ * @param paramJson Unity 传入的参数 JSON。
+ * @param gameObjectName Unity 回调对象名。
+ * @param callbackMethod Unity 回调方法名。
+ * @param requestId 发送请求 id。
+ */
 extern "C" void _sobotSendCustomCardToChat(const char* paramJson,
                                             const char* gameObjectName,
                                             const char* callbackMethod,
@@ -555,6 +700,13 @@ extern "C" void _sobotSendCustomCardToChat(const char* paramJson,
     });
 }
 
+/*
+ * 主动发送商品卡片。
+ * @param paramJson Unity 传入的参数 JSON。
+ * @param gameObjectName Unity 回调对象名。
+ * @param callbackMethod Unity 回调方法名。
+ * @param requestId 发送请求 id。
+ */
 extern "C" void _sobotSendProductInfo(const char* paramJson,
                                        const char* gameObjectName,
                                        const char* callbackMethod,
@@ -577,6 +729,13 @@ extern "C" void _sobotSendProductInfo(const char* paramJson,
     });
 }
 
+/*
+ * 主动发送订单卡片。
+ * @param paramJson Unity 传入的参数 JSON。
+ * @param gameObjectName Unity 回调对象名。
+ * @param callbackMethod Unity 回调方法名。
+ * @param requestId 发送请求 id。
+ */
 extern "C" void _sobotSendOrderGoodsInfo(const char* paramJson,
                                           const char* gameObjectName,
                                           const char* callbackMethod,
@@ -604,6 +763,13 @@ extern "C" void _sobotSendOrderGoodsInfo(const char* paramJson,
     });
 }
 
+/*
+ * 主动发送位置消息。
+ * @param paramJson Unity 传入的参数 JSON。
+ * @param gameObjectName Unity 回调对象名。
+ * @param callbackMethod Unity 回调方法名。
+ * @param requestId 发送请求 id。
+ */
 extern "C" void _sobotSendLocation(const char* paramJson,
                                     const char* gameObjectName,
                                     const char* callbackMethod,
@@ -630,6 +796,10 @@ extern "C" void _sobotSendLocation(const char* paramJson,
 
 #pragma mark - 链接点击监听
 
+/*
+ * 注册链接点击回调，由 Unity 决定是否拦截跳转。
+ * @param callback Unity 侧链接点击回调。
+ */
 extern "C" void _sobotSetLinkClickListener(SobotUnityLinkClickCallback callback) {
     s_linkClickCallback = callback;
 
@@ -640,6 +810,10 @@ extern "C" void _sobotSetLinkClickListener(SobotUnityLinkClickCallback callback)
 
 #pragma mark - 功能点击监听
 
+/*
+ * 注册功能按钮点击回调。
+ * @param callback Unity 侧功能点击回调。
+ */
 extern "C" void _sobotSetFunctionClickListener(SobotUnityFunctionClickCallback callback) {
     s_functionClickCallback = callback;
 
